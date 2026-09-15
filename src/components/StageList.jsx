@@ -11,7 +11,8 @@ const StageList = ({ stages, onEdit, onDelete }) => {
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th>Place</th>
+                            <th>Adresse</th>
+                            <th>Lien</th>
                             <th>Stage Name</th>
                             <th>Cost (€)</th>
                             <th>Dept</th>
@@ -22,7 +23,20 @@ const StageList = ({ stages, onEdit, onDelete }) => {
                         {stages.map((stage) => (
                             <tr key={stage._id}>
                                 <td>{new Date(stage.date).toLocaleDateString()}</td>
-                                <td>{stage.place}</td>
+                                <td>{stage.address || stage.place || '-'}</td>
+                                <td>
+                                    {stage.link ? (
+                                        <a 
+                                            href={stage.link} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                        >
+                                            Voir le lien
+                                        </a>
+                                    ) : (
+                                        '-'
+                                    )}
+                                </td>
                                 <td>{stage.stageName}</td>
                                 <td>{stage.cost}</td>
                                 <td>{stage.dept}</td>
