@@ -14,6 +14,7 @@ const StageList = ({ stages, onEdit, onDelete }) => {
                             <th>Adresse</th>
                             <th>Lien</th>
                             <th>Stage Name</th>
+                            <th>Enseignants</th>
                             <th>Cost (€)</th>
                             <th>Dept</th>
                             <th>Actions</th>
@@ -38,6 +39,19 @@ const StageList = ({ stages, onEdit, onDelete }) => {
                                     )}
                                 </td>
                                 <td>{stage.stageName}</td>
+                                <td>
+                                    {stage.enseignants && stage.enseignants.length > 0 ? (
+                                        <ul style={{ margin: 0, paddingLeft: '16px' }}>
+                                            {stage.enseignants.map((teacher, idx) => (
+                                                <li key={idx}>
+                                                    {teacher.firstName} {teacher.lastName}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        '-'
+                                    )}
+                                </td>
                                 <td>{stage.cost}</td>
                                 <td>{stage.dept}</td>
                                 <td>

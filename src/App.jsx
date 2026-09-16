@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getStages, createStage, updateStage, deleteStage } from './services/api';
 import StageForm from './components/StageForm';
 import StageList from './components/StageList';
-import './App.css'; // We will add styles next
+import './App.css';
 
 function App() {
     const [stages, setStages] = useState([]);
@@ -32,9 +32,10 @@ function App() {
                 await createStage(stageData);
             }
             loadStages(); // Refresh list
-            setCurrentStage(null); // Reset form
+            setCurrentStage(null); // Reset active edit
         } catch (error) {
-            alert("Error saving data: " + error.message);
+            const errorMessage = error.response?.data?.message || error.message;
+            alert("Error saving data: " + errorMessage);
         }
     };
 
@@ -42,6 +43,10 @@ function App() {
         if (window.confirm("Are you sure you want to delete this stage?")) {
             try {
                 await deleteStage(id);
+                // If we were currently editing the deleted item, reset the form
+                if (currentStage && currentStage._id === id) {
+                    setCurrentStage(null);
+                }
                 loadStages();
             } catch (error) {
                 console.error("Error deleting:", error);

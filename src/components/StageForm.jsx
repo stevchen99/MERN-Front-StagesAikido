@@ -1,38 +1,35 @@
 import React, { useState, useEffect } from 'react';
 
 const StageForm = ({ currentStage, onSave, onCancel }) => {
-    const [formData, setFormData] = useState({
+    const initialFormState = {
         date: '',
         address: '',
         link: '',
         stageName: '',
         cost: '',
-        dept: ''
-    });
+        dept: '',
+        enseignants: [{ firstName: '', lastName: '' }]
+    };
 
-    // Remplir le formulaire en mode édition
+    const [formData, setFormData] = useState(initialFormState);
+
     useEffect(() => {
         if (currentStage) {
-            // Format de la date pour l'input HTML (YYYY-MM-DD)
             const formattedDate = currentStage.date ? currentStage.date.split('T')[0] : '';
             
             setFormData({
                 date: formattedDate,
-                address: currentStage.address || currentStage.place || '', // Fallback si d'anciennes données utilisent encore 'place'
+                address: currentStage.address || currentStage.place || '',
                 link: currentStage.link || '',
                 stageName: currentStage.stageName || '',
                 cost: currentStage.cost || '',
-                dept: currentStage.dept || ''
+                dept: currentStage.dept || '',
+                enseignants: currentStage.enseignants && currentStage.enseignants.length > 0 
+                    ? currentStage.enseignants 
+                    : [{ firstName: '', lastName: '' }]
             });
         } else {
-            setFormData({
-                date: '',
-                address: '',
-                link: '',
-                stageName: '',
-                cost: '',
-                dept: ''
-            });
+            setFormData(initialFormState);
         }
     }, [currentStage]);
 
@@ -41,9 +38,39 @@ const StageForm = ({ currentStage, onSave, onCancel }) => {
         setFormData({ ...formData, [name]: value });
     };
 
+    // Handle teacher input updates
+    const handleTeacherChange = (index, field, value) => {
+        const updatedEnseignants = [...formData.enseignants];
+        updatedEnseignants[index][field] = value;
+        setFormData({ ...formData, enseignants: updatedEnseignants });
+    };
+
+    // Add a new empty teacher row
+    const handleAddTeacher = () => {
+        setFormData({
+            ...formData,
+            enseignants: [...formData.enseignants, { firstName: '', lastName: '' }]
+        });
+    };
+
+    // Remove a teacher row
+    const handleRemoveTeacher = (index) => {
+        const updatedEnseignants = formData.enseignants.filter((_, i) => i !== index);
+        setFormData({ ...formData, enseignants: updatedEnseignants });
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSave(formData);
+        
+        // Filter out any completely empty teacher entries before submitting
+        const cleanedData = {
+            ...formData,
+            enseignants: formData.enseignants.filter(
+                (teacher) => teacher.firstName.trim() !== '' || teacher.lastName.trim() !== ''
+            )
+        };
+
+        onSave(cleanedData);
     };
 
     return (
@@ -125,8 +152,37 @@ const StageForm = ({ currentStage, onSave, onCancel }) => {
                         style={{ textTransform: 'uppercase' }} 
                     />
                 </div>
+
+                {/* Enseignants Section */}
+                <div className="teachers-section">
+                    <label>Enseignants:</label>
+                    {formData.enseignants.map((teacher, index) => (
+                        <div key={index} className="teacher-row" style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                            <input 
+                                type="text" 
+                                placeholder="Prénom" 
+                                value={teacher.firstName} 
+                                onChange={(e) => handleTeacherChange(index, 'firstName', e.target.value)}
+                            />
+                            <input 
+                                type="text" 
+                                placeholder="Nom" 
+                                value={teacher.lastName} 
+                                onChange={(e) => handleTeacherChange(index, 'lastName', e.target.value)}
+                            />
+                            {formData.enseignants.length > 1 && (
+                                <button type="button" onClick={() => handleRemoveTeacher(index)}>
+                                    &times;
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                    <button type="button" onClick={handleAddTeacher} style={{ marginTop: '4px' }}>
+                        + Add Teacher
+                    </button>
+                </div>
                 
-                <div className="buttons">
+                <div className="buttons" style={{ marginTop: '16px' }}>
                     <button type="submit" className="btn-save">Save</button>
                     {currentStage && (
                         <button type="button" className="btn-cancel" onClick={onCancel}>
